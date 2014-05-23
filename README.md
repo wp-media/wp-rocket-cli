@@ -7,6 +7,7 @@ Currently supported commands:
 * `wp rocket activate` -- Set WP_CACHE to true.
 * `wp rocket deactivate` -- Set WP_CACHE to false.
 * `wp rocket clean --post_id=<post_id> --permalink=<permalink> --lang=<lang> --blog_id=<blog_id>` -- Purge cache files.
+* `wp rocket preload` -- Preload cache files
     
 ## Installing
 
