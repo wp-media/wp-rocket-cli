@@ -5,7 +5,7 @@ This repository contains a [WP-CLI plugin](https://github.com/wp-cli/wp-cli)  fo
 Currently supported commands:
 
 * `wp rocket activate` -- Set WP_CACHE to true.
-* `bp rocket deactivate` -- Set WP_CACHE to false.
+* `wp rocket deactivate` -- Set WP_CACHE to false.
 * `wp rocket clean --post_id=<post_id> --permalink=<permalink> --lang=<lang> --blog_id=<blog_id>` -- Purge cache files.
     
 ## Installing
