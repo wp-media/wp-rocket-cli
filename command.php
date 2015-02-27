@@ -254,7 +254,49 @@ class WPRocket_CLI extends WP_CLI_Command {
 		WP_CLI::success( 'Finished WP Rocket preload cache files.' );
 
 	}
-
+	
+	/**
+	 * Regenerate file 
+	 *
+	 * ## OPTIONS
+	 *
+	 * [--file=<file>]
+	 * : The file to regenerate. It could be: 
+	 *	- htaccess 
+	 *	- advanced-cache
+	 *	- config (It's the config file stored in the wp-rocket-config folder)
+	 *
+	 * ## EXAMPLES
+	 *
+	 *	   wp rocket regenerate --file=htaccess
+	 *
+	 * @subcommand regenerate
+	 */
+	public function regenerate( $args = array(), $assoc_args = array() ) {
+		if( !empty( $assoc_args['file'] ) ) {
+			switch( $assoc_args['file'] ) {
+				case 'advanced-cache':
+					rocket_generate_advanced_cache_file();
+					WP_CLI::success( 'The advanced-cache.php file has just been regenerated.' );	
+					break;
+				case 'config':
+					rocket_generate_config_file();
+					WP_CLI::success( 'The config file has just been regenerated.' );	
+					break;
+				case 'htaccess':
+					$GLOBALS['is_apache'] = true;
+					flush_rocket_htaccess();
+					WP_CLI::success( 'The .htaccess file has just been regenerated.' );	
+					break;
+				default:
+					WP_CLI::error( 'You don\'t specify a good value for the "file" argument. It should be: advanced-cache, config or htaccess.' );
+					break;
+			}
+			
+		} else {
+			WP_CLI::error( 'You don\'t specify the "file" argument.' );
+		}
+	}
 }
 
 WP_CLI::add_command( 'rocket', 'WPRocket_CLI' );
