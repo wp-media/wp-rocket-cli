@@ -127,7 +127,7 @@ class WPRocket_CLI extends WP_CLI_Command {
 
 		} else if( ! empty( $assoc_args['lang'] ) ) {
 
-			if( ! rocket_has_translation_plugin_active() ) {
+			if( ! rocket_has_i18n() ) {
 				WP_CLI::error( 'No WPML or qTranslate in this website.' );
 			}
 
@@ -222,7 +222,7 @@ class WPRocket_CLI extends WP_CLI_Command {
 
 			WP_CLI::confirm( 'Delete all cache files ?' );
 
-			if( rocket_has_translation_plugin_active() ) {
+			if( rocket_has_i18n() ) {
 				rocket_clean_domain_for_all_langs();
 			} else {
 				rocket_clean_domain();
@@ -245,7 +245,7 @@ class WPRocket_CLI extends WP_CLI_Command {
 	 */
 	public function preload( $args = array(), $assoc_args = array() ) {
 
-		if ( rocket_has_translation_plugin_active() ) {
+		if ( rocket_has_i18n() ) {
 			run_rocket_bot_for_all_langs();
 		} else {
 		    run_rocket_bot( 'cache-preload' );
