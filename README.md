@@ -12,7 +12,11 @@ Currently supported commands:
     
 ## Installing
 
-For instructions on installing this, and other, WP-CLI community packages, read the [Community Packages](https://github.com/wp-cli/wp-cli/wiki/Community-Packages) section of the WP-CLI Wiki. 
+If you're using WP-CLI v0.23.0 or later, you can install this package with:
+
+```
+wp package install GeekPress/wp-rocket-cli
+```
 
 ## Changelog
 
