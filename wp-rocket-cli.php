@@ -1,6 +1,6 @@
 <?php
 /*
- * Plugin Name: WR Rocket CLI
+ * Plugin Name: WP Rocket CLI
  * Plugin URI:
  * Description:
  * Version: 1.0
