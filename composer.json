@@ -1,6 +1,6 @@
 {
     "name": "GeekPress/wp-rocket-cli",
-    "type": "command",
+    "type": "wp-cli-package",
     "description": "Add a `wp rocket` command to support the WP Rocket plugin",
     "keywords": ["wp-cli", "rocket", "cache"],
     "homepage": "https://github.com/GeekPress/wp-rocket-cli",
