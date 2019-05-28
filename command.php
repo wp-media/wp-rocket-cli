@@ -224,11 +224,11 @@ class WPRocket_CLI extends WP_CLI_Command {
 		} else {
 
 			if ( ! empty( $assoc_args['confirm'] ) && $assoc_args['confirm'] ) {
-				WP_CLI::line('Deleting all cache files.');
+				WP_CLI::line( 'Deleting all cache files.' );
 			} else {
-				WP_CLI::confirm('Delete all cache files ?');
+				WP_CLI::confirm( 'Delete all cache files ?' );
 			}
-			
+
 			rocket_clean_domain();
 			WP_CLI::success( 'All cache files cleared.' );
 
@@ -246,25 +246,19 @@ class WPRocket_CLI extends WP_CLI_Command {
 	 * @subcommand preload
 	 */
 	public function preload( $args = array(), $assoc_args = array() ) {
-
-		if ( rocket_has_i18n() ) {
-			run_rocket_bot_for_all_langs();
-		} else {
-		    run_rocket_bot( 'cache-preload' );
-		}
+		run_rocket_bot( 'cache-preload' );
 
 		WP_CLI::success( 'Finished WP Rocket preload cache files.' );
-
 	}
-	
+
 	/**
-	 * Regenerate file 
+	 * Regenerate file
 	 *
 	 * ## OPTIONS
 	 *
 	 * [--file=<file>]
-	 * : The file to regenerate. It could be: 
-	 *	- htaccess 
+	 * : The file to regenerate. It could be:
+	 *	- htaccess
 	 *	- advanced-cache
 	 *	- config (It's the config file stored in the wp-rocket-config folder)
 	 *
@@ -279,22 +273,22 @@ class WPRocket_CLI extends WP_CLI_Command {
 			switch( $assoc_args['file'] ) {
 				case 'advanced-cache':
 					rocket_generate_advanced_cache_file();
-					WP_CLI::success( 'The advanced-cache.php file has just been regenerated.' );	
+					WP_CLI::success( 'The advanced-cache.php file has just been regenerated.' );
 					break;
 				case 'config':
 					rocket_generate_config_file();
-					WP_CLI::success( 'The config file has just been regenerated.' );	
+					WP_CLI::success( 'The config file has just been regenerated.' );
 					break;
 				case 'htaccess':
 					$GLOBALS['is_apache'] = true;
 					flush_rocket_htaccess();
-					WP_CLI::success( 'The .htaccess file has just been regenerated.' );	
+					WP_CLI::success( 'The .htaccess file has just been regenerated.' );
 					break;
 				default:
 					WP_CLI::error( 'You don\'t specify a good value for the "file" argument. It should be: advanced-cache, config or htaccess.' );
 					break;
 			}
-			
+
 		} else {
 			WP_CLI::error( 'You don\'t specify the "file" argument.' );
 		}
