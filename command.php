@@ -91,6 +91,9 @@ class WPRocket_CLI extends WP_CLI_Command {
 	 * @subcommand clean
 	 */
 	public function clean( $args = array(), $assoc_args = array() ) {
+		if ( ! function_exists( 'rocket_clean_domain' ) ) {
+			WP_CLI::error( ' The plugin WP-Rocket seems not enabled on this site.' );
+		}
 
 		if( ! empty( $assoc_args['blog_id'] ) ) {
 
