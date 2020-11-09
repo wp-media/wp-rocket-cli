@@ -1,3 +1,4 @@
+
 ## CLI interface for the WP Rocket
 
 This repository contains a [WP-CLI command](https://github.com/wp-cli/wp-cli)  for the [WP Rocket](http://wp-rocket.me) plugin. After installing this plugin, you will have access to a `wp rocket` command.
@@ -16,7 +17,7 @@ Currently supported commands:
 If you're using WP-CLI v0.23.0 or later, you can install this package with:
 
 ```
-wp package install geekpress/wp-rocket-cli
+wp package install wp-media/wp-rocket-cli
 ```
 
 ## Changelog
