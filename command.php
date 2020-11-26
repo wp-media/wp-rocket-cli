@@ -19,13 +19,13 @@ class WPRocket_CLI extends WP_CLI_Command {
 
 			if( is_writable( rocket_find_wpconfig_path() ) ) {
 				set_rocket_wp_cache_define( true );
-				WP_CLI::success( 'WP Rocket is enable, WP_CACHE is set to true.' );
+				WP_CLI::success( 'WP Rocket is now enabled, WP_CACHE is set to true.' );
 			} else {
 				WP_CLI::error( 'It seems we don\'t have writing permissions on wp-config.php file.' );
 			}
 
 		} else {
-			WP_CLI::error( 'WP Rocket is already enable.' );
+			WP_CLI::error( 'WP Rocket is already enabled.' );
 		}
 
 	}
@@ -45,13 +45,13 @@ class WPRocket_CLI extends WP_CLI_Command {
 
 			if( is_writable( rocket_find_wpconfig_path() ) ) {
 				set_rocket_wp_cache_define( false );
-				WP_CLI::success( 'WP Rocket is disable, WP_CACHE is set to false.' );
+				WP_CLI::success( 'WP Rocket is now disabled, WP_CACHE is set to false.' );
 			} else {
 				WP_CLI::error( 'It seems we don\'t have writing permissions on wp-config.php file.' );
 			}
 
 		} else {
-			WP_CLI::error( 'WP Rocket is already disable.' );
+			WP_CLI::error( 'WP Rocket is already disabled.' );
 		}
 
 	}
@@ -95,7 +95,7 @@ class WPRocket_CLI extends WP_CLI_Command {
 		if( ! empty( $assoc_args['blog_id'] ) ) {
 
 			if ( ! defined( 'MULTISITE' ) || ! MULTISITE ) {
-				WP_CLI::error( 'This installation doesn\'t multisite support.' );
+				WP_CLI::error( 'This installation doesn\'t support multisite.' );
 			}
 
 			$blog_ids = explode( ',' , $assoc_args['blog_id'] );
@@ -285,12 +285,12 @@ class WPRocket_CLI extends WP_CLI_Command {
 					WP_CLI::success( 'The .htaccess file has just been regenerated.' );
 					break;
 				default:
-					WP_CLI::error( 'You don\'t specify a good value for the "file" argument. It should be: advanced-cache, config or htaccess.' );
+					WP_CLI::error( 'You didn\'t specify a good value for the "file" argument. It should be: advanced-cache, config or htaccess.' );
 					break;
 			}
 
 		} else {
-			WP_CLI::error( 'You don\'t specify the "file" argument.' );
+			WP_CLI::error( 'You didn\'t specify the "file" argument.' );
 		}
 	}
 }
