@@ -1,4 +1,7 @@
 <?php
+
+use \WP_Rocket\Engine\Cache\WPCache;
+
 /**
  * Manage Revisions
  */
@@ -17,11 +20,12 @@ class WPRocket_CLI extends WP_CLI_Command {
 
 		if( defined( 'WP_CACHE' ) && ! WP_CACHE ) {
 
-			if( is_writable( rocket_find_wpconfig_path() ) ) {
-				set_rocket_wp_cache_define( true );
-				WP_CLI::success( 'WP Rocket is enable, WP_CACHE is set to true.' );
+			$wp_cache = new WPCache( rocket_direct_filesystem() );
+
+			if ( $wp_cache->set_wp_cache_constant( true ) ) {
+				WP_CLI::success( 'WP Rocket is enabled, WP_CACHE is set to true.' );
 			} else {
-				WP_CLI::error( 'It seems we don\'t have writing permissions on wp-config.php file.' );
+				WP_CLI::error( 'Error while setting WP_CACHE constant into wp-config.php!' );
 			}
 
 		} else {
@@ -43,11 +47,12 @@ class WPRocket_CLI extends WP_CLI_Command {
 
 		if( defined( 'WP_CACHE' ) && WP_CACHE ) {
 
-			if( is_writable( rocket_find_wpconfig_path() ) ) {
-				set_rocket_wp_cache_define( false );
+			$wp_cache = new WPCache( rocket_direct_filesystem() );
+
+			if ( $wp_cache->set_wp_cache_constant( false ) ) {
 				WP_CLI::success( 'WP Rocket is disable, WP_CACHE is set to false.' );
 			} else {
-				WP_CLI::error( 'It seems we don\'t have writing permissions on wp-config.php file.' );
+				WP_CLI::error( 'Error while setting WP_CACHE constant into wp-config.php!' );
 			}
 
 		} else {
