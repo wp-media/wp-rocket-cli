@@ -268,6 +268,7 @@ class WPRocket_CLI extends WP_CLI_Command {
 	 * ## EXAMPLES
 	 *
 	 *	   wp rocket regenerate --file=htaccess
+	 *     wp rocket regenerate --file=config --nginx=true
 	 *
 	 * @subcommand regenerate
 	 */
