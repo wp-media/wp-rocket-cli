@@ -262,9 +262,13 @@ class WPRocket_CLI extends WP_CLI_Command {
 	 *	- advanced-cache
 	 *	- config (It's the config file stored in the wp-rocket-config folder)
 	 *
+	 * [--nginx=<bool>]
+	 * : The command should run as if on nginx (setting the $is_nginx global to true)
+	 *
 	 * ## EXAMPLES
 	 *
 	 *	   wp rocket regenerate --file=htaccess
+	 *     wp rocket regenerate --file=config --nginx=true
 	 *
 	 * @subcommand regenerate
 	 */
@@ -276,6 +280,9 @@ class WPRocket_CLI extends WP_CLI_Command {
 					WP_CLI::success( 'The advanced-cache.php file has just been regenerated.' );
 					break;
 				case 'config':
+					if ( ! empty( $assoc_args['nginx'] ) && $assoc_args = true ) {
+						$GLOBALS['is_nginx'] = true;
+					}
 					rocket_generate_config_file();
 					WP_CLI::success( 'The config file has just been regenerated.' );
 					break;
