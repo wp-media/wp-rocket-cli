@@ -233,6 +233,13 @@ class WPRocket_CLI extends WP_CLI_Command {
 			}
 
 			rocket_clean_domain();
+
+			// Remove all minify cache files.
+			rocket_clean_minify();
+			// Generate a new random key for minify cache file.
+			update_rocket_option( 'minify_css_key', create_rocket_uniqid() );
+			update_rocket_option( 'minify_js_key', create_rocket_uniqid() );
+
 			WP_CLI::success( 'All cache files cleared.' );
 
 		}
