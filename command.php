@@ -325,7 +325,7 @@ class WPRocket_CLI extends WP_CLI_Command {
 	 */
 	public function cdn( $args = array(), $assoc_args = array() ) {
 		if ( empty( $assoc_args['enable'] ) ) {
-			WP_CLI::error( 'You did\'t specify the "enable" argument.' );
+			WP_CLI::error( 'The "enable" argument must be specified.' );
 			return;
 		}
 
@@ -349,20 +349,41 @@ class WPRocket_CLI extends WP_CLI_Command {
 
 					update_rocket_option( 'cdn_cnames', $cdn_cnames );
 					update_rocket_option( 'cdn_zone', $cdn_zones );
+					$this->clean_wp_rocket_cache( true );
 
 					WP_CLI::success( 'CDN enabled successfully with CNAME=<' . $cname .'> and zone=<' . $zone . '>' );
 					break;
 				}
 
+				$this->clean_wp_rocket_cache( true );
 				WP_CLI::success( 'CDN enabled successfully without CNAME' );
 				break;
 			case 'false':
 				update_rocket_option( 'cdn', false );
+				$this->clean_wp_rocket_cache( true );
 				WP_CLI::success( 'CDN disabled successfully!' );
 				break;
 			default:
 			WP_CLI::error( 'The "enable" argument must contain either true or false value.' );
 				break;
+		}
+	}
+
+	/**
+	 * Clean WP Rocket domain and additional cache files.
+	 *
+	 * @param boolean $minify Clean also minify cache files.
+	 * @return void
+	 */
+	private function clean_wp_rocket_cache( $minify = false ) {
+		rocket_clean_domain();
+
+		if ( $minify ) {
+			// Remove all minify cache files.
+			rocket_clean_minify();
+			// Generate a new random key for minify cache file.
+			update_rocket_option( 'minify_css_key', create_rocket_uniqid() );
+			update_rocket_option( 'minify_js_key', create_rocket_uniqid() );
 		}
 	}
 }
