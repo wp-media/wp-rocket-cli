@@ -242,14 +242,27 @@ class WPRocket_CLI extends WP_CLI_Command {
 	/**
 	 * Run WP Rocket Bot for preload cache files
 	 *
+	 * ## OPTIONS
+	 *
+	 * [--sitemap]
+	 * : Trigger sitemap-based preloading
+	 * 
 	 * ## EXAMPLES
 	 *
 	 *     wp rocket preload
+	 *     wp rocket preload --sitemap
 	 *
 	 * @subcommand preload
 	 */
 	public function preload( $args = array(), $assoc_args = array() ) {
-		run_rocket_bot( 'cache-preload' );
+	
+		if ( ! empty( $assoc_args['sitemap'] ) && $assoc_args['sitemap'] ) {
+			WP_CLI::line( 'Triggering sitemap-based preloading.' );
+			run_rocket_sitemap_preload();
+		} else {
+			WP_CLI::line( 'Triggering homepage-based preloading.' );
+			run_rocket_bot( 'cache-preload' );
+		}
 
 		WP_CLI::success( 'Finished WP Rocket preload cache files.' );
 	}
