@@ -300,6 +300,71 @@ class WPRocket_CLI extends WP_CLI_Command {
 			WP_CLI::error( 'You don\'t specify the "file" argument.' );
 		}
 	}
+
+	/**
+	 * Enable / Disable CDN option and set the CDN URL.
+	 *
+	 * ## OPTIONS
+	 *
+	 * [--enable=<enable>]
+	 * : Option to enable / disable = boolean.
+	 *
+	 * [--host=<host>]
+	 * : CDN host.
+	 *
+	 * [--zone=<zone>]
+	 * : CDN zone -> [ all, images, css_and_js, js, css ]
+	 *
+	 * ## EXAMPLES
+	 *
+	 *     wp rocket cdn --enable=false
+	 *     wp rocket cdn --enable=true --host=http://cdn.example.com
+	 *     wp rocket cdn --enable=true --host=http://cdn.example.com --zone=all
+	 *
+	 * @subcommand cdn
+	 */
+	public function cdn( $args = array(), $assoc_args = array() ) {
+		if ( empty( $assoc_args['enable'] ) ) {
+			WP_CLI::error( 'You did\'t specify the "enable" argument.' );
+			return;
+		}
+
+		switch( $assoc_args['enable'] ) {
+			case 'true':
+				update_rocket_option( 'cdn', true );
+
+				if ( ! empty( $assoc_args['host'] ) ) {
+					$cdn_cnames = get_rocket_option( 'cdn_cnames', true );
+					$cdn_zones  = get_rocket_option( 'cdn_zone', true );
+					$cname      = $assoc_args['host'];
+					$zone       = ( ! empty( $assoc_args['zone'] ) ? $assoc_args['zone'] : 'all' );
+					$exists     = array_search( $cname, $cdn_cnames );
+					if ( false === $exists ) {
+						// CNAME does not exist. Set it the last element.
+						$exists = count( $cdn_cnames );
+					}
+
+					$cdn_cnames[ $exists ] = $cname;
+					$cdn_zones[ $exists ]  = $zone;
+
+					update_rocket_option( 'cdn_cnames', $cdn_cnames );
+					update_rocket_option( 'cdn_zone', $cdn_zones );
+
+					WP_CLI::success( 'CDN enabled successfully with CNAME=<' . $cname .'> and zone=<' . $zone . '>' );
+					break;
+				}
+
+				WP_CLI::success( 'CDN enabled successfully without CNAME' );
+				break;
+			case 'false':
+				update_rocket_option( 'cdn', false );
+				WP_CLI::success( 'CDN disabled successfully!' );
+				break;
+			default:
+			WP_CLI::error( 'The "enable" argument must contain either true or false value.' );
+				break;
+		}
+	}
 }
 
 WP_CLI::add_command( 'rocket', 'WPRocket_CLI' );
