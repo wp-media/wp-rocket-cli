@@ -95,21 +95,20 @@ class WPRocket_CLI extends WP_CLI_Command {
 	 *
 	 * @subcommand clean
 	 */
-	public function clean( $args = array(), $assoc_args = array() ) {
+	public function clean( array $args = [], array $assoc_args = [] ) {
 
 		if( ! empty( $assoc_args['blog_id'] ) ) {
-
 			if ( ! defined( 'MULTISITE' ) || ! MULTISITE ) {
 				WP_CLI::error( 'This installation doesn\'t multisite support.' );
 			}
 
 			$blog_ids = explode( ',' , $assoc_args['blog_id'] );
-			$blog_ids = array_map( 'trim' , $blog_ids );
 			$total    = 0;
 
 			$notify = \WP_CLI\Utils\make_progress_bar( 'Delete cache files', count( $blog_ids ) );
 
 			foreach ( $blog_ids as $blog_id ) {
+				$blog_id = trim( $blog_id );
 
 				if ( $bloginfo = get_blog_details( (int) $blog_id, false ) ) {
 
@@ -121,7 +120,6 @@ class WPRocket_CLI extends WP_CLI_Command {
 					restore_current_blog();
 
 					$total++;
-
 				} else {
 					WP_CLI::line( 'This blog ID "' . $blog_id . '" doesn\'t exist.' );
 				}
@@ -134,9 +132,8 @@ class WPRocket_CLI extends WP_CLI_Command {
 			WP_CLI::success( 'Cache cleared for ' . $total . ' blog(s).' );
 
 		} else if( ! empty( $assoc_args['lang'] ) ) {
-
 			if( ! rocket_has_i18n() ) {
-				WP_CLI::error( 'No WPML or qTranslate in this website.' );
+				WP_CLI::error( 'No WPML, Polylang or qTranslate in this website.' );
 			}
 
 			$langs = explode( ',' , $assoc_args['lang'] );
@@ -147,7 +144,7 @@ class WPRocket_CLI extends WP_CLI_Command {
 
 			foreach ( $langs as $lang ) {
 
-				rocket_clean_domain_for_selected_lang( $lang );
+				rocket_clean_domain( $lang );
 				$notify->tick();
 
 			}
@@ -156,56 +153,40 @@ class WPRocket_CLI extends WP_CLI_Command {
 			WP_CLI::success( 'Cache files cleared for ' . $total . ' lang(s).' );
 
 		} else if( ! empty( $assoc_args['permalink'] ) ) {
-
 			$permalinks = explode( ',' , $assoc_args['permalink'] );
-			$permalinks = array_map( 'trim' , $permalinks );
 			$total      = count( $permalinks );
 
 			$notify = \WP_CLI\Utils\make_progress_bar( 'Delete cache files', $total );
 
 			foreach ( $permalinks as $permalink ) {
+				$permalink = trim( $permalink );
 
 				rocket_clean_files( $permalink );
 				WP_CLI::line( 'Cache cleared for "' . $permalink . '".' );
 
 				$notify->tick();
-
 			}
 
 			$notify->finish();
 			WP_CLI::success( 'Cache files cleared for ' . $total . ' permalink(s).' );
 
 		} else if( ! empty( $assoc_args['post_id'] ) ) {
-
 			$total    = 0;
 			$post_ids = explode( ',' , $assoc_args['post_id'] );
-			$post_ids = array_map( 'trim' , $post_ids );
 
 			$notify = \WP_CLI\Utils\make_progress_bar( 'Delete cache files', count( $post_ids ) );
 
 			foreach ( $post_ids as $post_id ) {
-
 				global $wpdb;
+
+				$post_id = trim( $post_id );
 				$post_exists = $wpdb->get_row( "SELECT ID FROM $wpdb->posts WHERE id = '" . (int) $post_id . "'");
 
-				if( $post_exists ) {
-
-					if( get_post_type( $post_id ) == 'attachment' ) {
-
-						WP_CLI::line( 'This post ID "' . $post_id . '" is an attachment.' );
-
-					} else {
-
-						rocket_clean_post( $post_id );
-						WP_CLI::line( 'Cache cleared for post ID "' . $post_id . '".' );
-						$total++;
-
-					}
-
+				if( rocket_clean_post( $post_id ) ) {
+					WP_CLI::line( 'Cache cleared for post ID "' . $post_id . '".' );
+					$total++;
 				} else {
-
-					WP_CLI::line( 'This post ID "' . $post_id . '" doesn\'t exist.' );
-
+					WP_CLI::line( 'This post ID "' . $post_id . '" is not valid public post.' );
 				}
 
 				$notify->tick();
@@ -213,7 +194,6 @@ class WPRocket_CLI extends WP_CLI_Command {
 			}
 
 			if( $total ) {
-
 				$notify->finish();
 
 				if( $total == 1 ) {
@@ -225,18 +205,18 @@ class WPRocket_CLI extends WP_CLI_Command {
 			} else {
 				WP_CLI::error( 'No cache files are cleared.' );
 			}
-
 		} else {
-
 			if ( ! empty( $assoc_args['confirm'] ) && $assoc_args['confirm'] ) {
 				WP_CLI::line( 'Deleting all cache files.' );
 			} else {
 				WP_CLI::confirm( 'Delete all cache files ?' );
 			}
 
-			rocket_clean_domain();
-			WP_CLI::success( 'All cache files cleared.' );
-
+			if ( rocket_clean_domain() ) {
+				WP_CLI::success( 'All cache files cleared.' );
+			}else{
+				WP_CLI::error( 'No cache files are cleared.' );
+			}
 		}
 
 	}
@@ -250,10 +230,12 @@ class WPRocket_CLI extends WP_CLI_Command {
 	 *
 	 * @subcommand preload
 	 */
-	public function preload( $args = array(), $assoc_args = array() ) {
-		run_rocket_bot( 'cache-preload' );
-
-		WP_CLI::success( 'Finished WP Rocket preload cache files.' );
+	public function preload( array $args = [], array $assoc_args = [] ) {
+		if ( run_rocket_bot() ) {
+			WP_CLI::success( 'Finished WP Rocket preload cache files.' );
+		}else{
+			WP_CLI::error( 'Can\'t start preload cache, please check preload option is activated.' );
+		}
 	}
 
 	/**
@@ -273,12 +255,15 @@ class WPRocket_CLI extends WP_CLI_Command {
 	 *
 	 * @subcommand regenerate
 	 */
-	public function regenerate( $args = array(), $assoc_args = array() ) {
+	public function regenerate( array $args = [], array $assoc_args = [] ) {
 		if( !empty( $assoc_args['file'] ) ) {
 			switch( $assoc_args['file'] ) {
 				case 'advanced-cache':
-					rocket_generate_advanced_cache_file();
-					WP_CLI::success( 'The advanced-cache.php file has just been regenerated.' );
+					if ( rocket_generate_advanced_cache_file() ) {
+						WP_CLI::success( 'The advanced-cache.php file has just been regenerated.' );
+					}else{
+						WP_CLI::error( 'Can\'t generate advanced-cache.php file, please check folder permissions.' );
+					}
 					break;
 				case 'config':
 					rocket_generate_config_file();
@@ -286,8 +271,11 @@ class WPRocket_CLI extends WP_CLI_Command {
 					break;
 				case 'htaccess':
 					$GLOBALS['is_apache'] = true;
-					flush_rocket_htaccess();
-					WP_CLI::success( 'The .htaccess file has just been regenerated.' );
+					if ( flush_rocket_htaccess() ) {
+						WP_CLI::success( 'The .htaccess file has just been regenerated.' );
+					}else{
+						WP_CLI::error( 'Can\'t generate .htaccess file.' );
+					}
 					break;
 				default:
 					WP_CLI::error( 'You don\'t specify a good value for the "file" argument. It should be: advanced-cache, config or htaccess.' );
