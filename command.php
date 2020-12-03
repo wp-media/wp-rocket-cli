@@ -23,13 +23,13 @@ class WPRocket_CLI extends WP_CLI_Command {
 			$wp_cache = new WPCache( rocket_direct_filesystem() );
 
 			if ( $wp_cache->set_wp_cache_constant( true ) ) {
-				WP_CLI::success( 'WP Rocket is enabled, WP_CACHE is set to true.' );
+				WP_CLI::success( 'WP Rocket is now enabled, WP_CACHE is set to true.' );
 			} else {
 				WP_CLI::error( 'Error while setting WP_CACHE constant into wp-config.php!' );
 			}
 
 		} else {
-			WP_CLI::error( 'WP Rocket is already enable.' );
+			WP_CLI::error( 'WP Rocket is already enabled.' );
 		}
 
 	}
@@ -50,13 +50,13 @@ class WPRocket_CLI extends WP_CLI_Command {
 			$wp_cache = new WPCache( rocket_direct_filesystem() );
 
 			if ( $wp_cache->set_wp_cache_constant( false ) ) {
-				WP_CLI::success( 'WP Rocket is disable, WP_CACHE is set to false.' );
+				WP_CLI::success( 'WP Rocket is now disable, WP_CACHE is set to false.' );
 			} else {
 				WP_CLI::error( 'Error while setting WP_CACHE constant into wp-config.php!' );
 			}
 
 		} else {
-			WP_CLI::error( 'WP Rocket is already disable.' );
+			WP_CLI::error( 'WP Rocket is already disabled.' );
 		}
 
 	}
@@ -96,10 +96,13 @@ class WPRocket_CLI extends WP_CLI_Command {
 	 * @subcommand clean
 	 */
 	public function clean( array $args = [], array $assoc_args = [] ) {
+		if ( ! function_exists( 'rocket_clean_domain' ) ) {
+			WP_CLI::error( ' The plugin WP-Rocket seems not enabled on this site.' );
+		}
 
 		if( ! empty( $assoc_args['blog_id'] ) ) {
 			if ( ! defined( 'MULTISITE' ) || ! MULTISITE ) {
-				WP_CLI::error( 'This installation doesn\'t multisite support.' );
+				WP_CLI::error( 'This installation doesn\'t support multisite.' );
 			}
 
 			$blog_ids = explode( ',' , $assoc_args['blog_id'] );
@@ -177,10 +180,7 @@ class WPRocket_CLI extends WP_CLI_Command {
 			$notify = \WP_CLI\Utils\make_progress_bar( 'Delete cache files', count( $post_ids ) );
 
 			foreach ( $post_ids as $post_id ) {
-				global $wpdb;
-
 				$post_id = trim( $post_id );
-				$post_exists = $wpdb->get_row( "SELECT ID FROM $wpdb->posts WHERE id = '" . (int) $post_id . "'");
 
 				if( rocket_clean_post( $post_id ) ) {
 					WP_CLI::line( 'Cache cleared for post ID "' . $post_id . '".' );
@@ -224,18 +224,32 @@ class WPRocket_CLI extends WP_CLI_Command {
 	/**
 	 * Run WP Rocket Bot for preload cache files
 	 *
+	 * ## OPTIONS
+	 *
+	 * [--sitemap]
+	 * : Trigger sitemap-based preloading
+	 *
 	 * ## EXAMPLES
 	 *
 	 *     wp rocket preload
+	 *     wp rocket preload --sitemap
 	 *
 	 * @subcommand preload
 	 */
 	public function preload( array $args = [], array $assoc_args = [] ) {
-		if ( run_rocket_bot() ) {
-			WP_CLI::success( 'Finished WP Rocket preload cache files.' );
-		}else{
-			WP_CLI::error( 'Can\'t start preload cache, please check preload option is activated.' );
+
+		if ( ! empty( $assoc_args['sitemap'] ) && $assoc_args['sitemap'] ) {
+			WP_CLI::line( 'Triggering sitemap-based preloading.' );
+			run_rocket_sitemap_preload();
+		} else {
+			if ( run_rocket_bot() ) {
+				WP_CLI::success( 'Triggering homepage-based preloading.' );
+			}else{
+				WP_CLI::error( 'Can\'t start preload cache, please check preload option is activated.' );
+			}
 		}
+
+		WP_CLI::success( 'Finished WP Rocket preload cache files.' );
 	}
 
 	/**
@@ -249,9 +263,13 @@ class WPRocket_CLI extends WP_CLI_Command {
 	 *	- advanced-cache
 	 *	- config (It's the config file stored in the wp-rocket-config folder)
 	 *
+	 * [--nginx=<bool>]
+	 * : The command should run as if on nginx (setting the $is_nginx global to true)
+	 *
 	 * ## EXAMPLES
 	 *
 	 *	   wp rocket regenerate --file=htaccess
+	 *     wp rocket regenerate --file=config --nginx=true
 	 *
 	 * @subcommand regenerate
 	 */
@@ -266,6 +284,10 @@ class WPRocket_CLI extends WP_CLI_Command {
 					}
 					break;
 				case 'config':
+					if ( ! empty( $assoc_args['nginx'] ) && $assoc_args = true ) {
+						$GLOBALS['is_nginx'] = true;
+					}
+
 					rocket_generate_config_file();
 					WP_CLI::success( 'The config file has just been regenerated.' );
 					break;
@@ -278,12 +300,12 @@ class WPRocket_CLI extends WP_CLI_Command {
 					}
 					break;
 				default:
-					WP_CLI::error( 'You don\'t specify a good value for the "file" argument. It should be: advanced-cache, config or htaccess.' );
+					WP_CLI::error( 'You didn\'t specify a good value for the "file" argument. It should be: advanced-cache, config or htaccess.' );
 					break;
 			}
 
 		} else {
-			WP_CLI::error( 'You don\'t specify the "file" argument.' );
+			WP_CLI::error( 'You didn\'t specify the "file" argument.' );
 		}
 	}
 }
