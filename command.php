@@ -50,7 +50,7 @@ class WPRocket_CLI extends WP_CLI_Command {
 			$wp_cache = new WPCache( rocket_direct_filesystem() );
 
 			if ( $wp_cache->set_wp_cache_constant( false ) ) {
-				WP_CLI::success( 'WP Rocket is now disable, WP_CACHE is set to false.' );
+				WP_CLI::success( 'WP Rocket is now disabled, WP_CACHE is set to false.' );
 			} else {
 				WP_CLI::error( 'Error while setting WP_CACHE constant into wp-config.php!' );
 			}
@@ -186,7 +186,7 @@ class WPRocket_CLI extends WP_CLI_Command {
 					WP_CLI::line( 'Cache cleared for post ID "' . $post_id . '".' );
 					$total++;
 				} else {
-					WP_CLI::line( 'This post ID "' . $post_id . '" is not valid public post.' );
+					WP_CLI::line( 'This post ID "' . $post_id . '" is not a valid public post.' );
 				}
 
 				$notify->tick();
@@ -203,7 +203,7 @@ class WPRocket_CLI extends WP_CLI_Command {
 				}
 
 			} else {
-				WP_CLI::error( 'No cache files are cleared.' );
+				WP_CLI::error( 'No cache files cleared.' );
 			}
 		} else {
 			if ( ! empty( $assoc_args['confirm'] ) && $assoc_args['confirm'] ) {
