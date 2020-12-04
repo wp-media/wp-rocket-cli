@@ -9,16 +9,22 @@ class WPRocket_CLI extends WP_CLI_Command {
 	 *
 	 * ## EXAMPLES
 	 *
-	 *     wp rocket activate
+	 *     wp rocket activate-cache
 	 *
-	 * @subcommand activate
+	 * @subcommand activate-cache
 	 */
-	public function activate() {
+	public function activate_cache() {
 
 		if( defined( 'WP_CACHE' ) && ! WP_CACHE ) {
 
 			if( is_writable( rocket_find_wpconfig_path() ) ) {
 				set_rocket_wp_cache_define( true );
+				if ( rocket_valid_key() ) {
+					// Add All WP Rocket rules of the .htaccess file.
+					flush_rocket_htaccess();
+				}
+				// Clean WP Rocket Cache and Minified files.
+				$this->clean_wp_rocket_cache( true );
 				WP_CLI::success( 'WP Rocket is now enabled, WP_CACHE is set to true.' );
 			} else {
 				WP_CLI::error( 'It seems we don\'t have writing permissions on wp-config.php file.' );
@@ -35,16 +41,22 @@ class WPRocket_CLI extends WP_CLI_Command {
 	 *
 	 * ## EXAMPLES
 	 *
-	 *     wp rocket deactivate
+	 *     wp rocket deactivate-cache
 	 *
-	 * @subcommand deactivate
+	 * @subcommand deactivate-cache
 	 */
-	public function deactivate() {
+	public function deactivate_cache() {
 
 		if( defined( 'WP_CACHE' ) && WP_CACHE ) {
 
 			if( is_writable( rocket_find_wpconfig_path() ) ) {
 				set_rocket_wp_cache_define( false );
+				if ( rocket_valid_key() ) {
+					// Add All WP Rocket rules of the .htaccess file.
+					flush_rocket_htaccess();
+				}
+				// Clean WP Rocket Cache and Minified files.
+				$this->clean_wp_rocket_cache( true );
 				WP_CLI::success( 'WP Rocket is now disabled, WP_CACHE is set to false.' );
 			} else {
 				WP_CLI::error( 'It seems we don\'t have writing permissions on wp-config.php file.' );
@@ -246,7 +258,7 @@ class WPRocket_CLI extends WP_CLI_Command {
 	 *
 	 * [--sitemap]
 	 * : Trigger sitemap-based preloading
-	 * 
+	 *
 	 * ## EXAMPLES
 	 *
 	 *     wp rocket preload
@@ -255,7 +267,7 @@ class WPRocket_CLI extends WP_CLI_Command {
 	 * @subcommand preload
 	 */
 	public function preload( $args = array(), $assoc_args = array() ) {
-	
+
 		if ( ! empty( $assoc_args['sitemap'] ) && $assoc_args['sitemap'] ) {
 			WP_CLI::line( 'Triggering sitemap-based preloading.' );
 			run_rocket_sitemap_preload();
@@ -314,6 +326,24 @@ class WPRocket_CLI extends WP_CLI_Command {
 
 		} else {
 			WP_CLI::error( 'You didn\'t specify the "file" argument.' );
+		}
+	}
+
+	/**
+	 * Clean WP Rocket domain and additional cache files.
+	 *
+	 * @param boolean $minify Clean also minify cache files.
+	 * @return void
+	 */
+	private function clean_wp_rocket_cache( $minify = false ) {
+		rocket_clean_domain();
+
+		if ( $minify ) {
+			// Remove all minify cache files.
+			rocket_clean_minify();
+			// Generate a new random key for minify cache file.
+			update_rocket_option( 'minify_css_key', create_rocket_uniqid() );
+			update_rocket_option( 'minify_js_key', create_rocket_uniqid() );
 		}
 	}
 }
