@@ -83,9 +83,9 @@ class WPRocket_CLI extends WP_CLI_Command {
 	 *     wp rocket clean --post_id=2,4,6,8
 	 *     wp rocket clean --permalink=http://example.com
 	 *     wp rocket clean --permalink=http://example.com, http://example.com/category/(.*)
-	 *	   wp rocket clean --lang=fr
+	 *     wp rocket clean --lang=fr
 	 *     wp rocket clean --lang=fr,de,en,it
-	 *	   wp rocket clean --blog_id=2
+	 *     wp rocket clean --blog_id=2
 	 *     wp rocket clean --blog_id=2,4,6,8
 	 *
 	 * @subcommand clean
@@ -115,6 +115,12 @@ class WPRocket_CLI extends WP_CLI_Command {
 
 					rocket_clean_domain();
 					WP_CLI::line( 'Cache cleared for "' . esc_url( 'http://' . $bloginfo->domain . $bloginfo->path ) . '".' );
+
+					// Remove all minify cache files.
+					rocket_clean_minify();
+					// Generate a new random key for minify cache file.
+					update_rocket_option( 'minify_css_key', create_rocket_uniqid() );
+					update_rocket_option( 'minify_js_key', create_rocket_uniqid() );
 
 					restore_current_blog();
 
@@ -268,16 +274,16 @@ class WPRocket_CLI extends WP_CLI_Command {
 	 *
 	 * [--file=<file>]
 	 * : The file to regenerate. It could be:
-	 *	- htaccess
-	 *	- advanced-cache
-	 *	- config (It's the config file stored in the wp-rocket-config folder)
+	 *  - htaccess
+	 *  - advanced-cache
+	 *  - config (It's the config file stored in the wp-rocket-config folder)
 	 *
 	 * [--nginx=<bool>]
 	 * : The command should run as if on nginx (setting the $is_nginx global to true)
 	 *
 	 * ## EXAMPLES
 	 *
-	 *	   wp rocket regenerate --file=htaccess
+	 *     wp rocket regenerate --file=htaccess
 	 *     wp rocket regenerate --file=config --nginx=true
 	 *
 	 * @subcommand regenerate
