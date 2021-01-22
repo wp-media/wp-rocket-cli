@@ -12,6 +12,7 @@ Supported commands:
 * `wp rocket preload` -- Preload cache files.
 * `wp rocket regenerate --file=<file>` -- Regenerate .htaccess, advanced-cache.php or the WP Rocket config file.
 * `wp rocket regenerate --file=config --nginx=true` -- regenerate the config file on Nginx hosts.
+* `wp rocket cdn --enable=<enable> --host=<host> --zone=<zone>` -- Enable / Disable CDN with the specified host and zone.
 
 ## Installing
 
