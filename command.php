@@ -82,7 +82,7 @@ class WPRocket_CLI extends WP_CLI_Command {
 	 *     wp rocket clean --post_id=2
 	 *     wp rocket clean --post_id=2,4,6,8
 	 *     wp rocket clean --permalink=http://example.com
-	 *     wp rocket clean --permalink=http://example.com, http://example.com/category/(.*)
+	 *     wp rocket clean --permalink=http://example.com,http://example.com/category/(.*)
 	 *     wp rocket clean --lang=fr
 	 *     wp rocket clean --lang=fr,de,en,it
 	 *     wp rocket clean --blog_id=2
@@ -112,6 +112,10 @@ class WPRocket_CLI extends WP_CLI_Command {
 				if ( $bloginfo = get_blog_details( (int) $blog_id, false ) ) {
 
 					switch_to_blog( $blog_id );
+
+					if ( ! is_plugin_active( 'wp-rocket/wp-rocket.php' ) ) {
+						continue;
+					}
 
 					rocket_clean_domain();
 					WP_CLI::line( 'Cache cleared for "' . esc_url( 'http://' . $bloginfo->domain . $bloginfo->path ) . '".' );
@@ -151,7 +155,7 @@ class WPRocket_CLI extends WP_CLI_Command {
 
 			foreach ( $langs as $lang ) {
 
-				rocket_clean_domain_for_selected_lang( $lang );
+				rocket_clean_domain( $lang );
 				$notify->tick();
 
 			}
