@@ -309,6 +309,92 @@ class WPRocket_CLI extends WP_CLI_Command {
 			WP_CLI::error( 'You did not specify the "file" argument.' );
 		}
 	}
+
+	/**
+	 * Enable / Disable CDN option and set the CDN URL.
+	 *
+	 * ## OPTIONS
+	 *
+	 * [--enable=<enable>]
+	 * : Option to enable / disable = boolean.
+	 *
+	 * [--host=<host>]
+	 * : CDN host.
+	 *
+	 * [--zone=<zone>]
+	 * : CDN zone -> [ all, images, css_and_js, js, css ]
+	 *
+	 * ## EXAMPLES
+	 *
+	 *     wp rocket cdn --enable=false
+	 *     wp rocket cdn --enable=true --host=http://cdn.example.com
+	 *     wp rocket cdn --enable=true --host=http://cdn.example.com --zone=all
+	 *
+	 * @subcommand cdn
+	 */
+	public function cdn( $args = array(), $assoc_args = array() ) {
+		if ( empty( $assoc_args['enable'] ) ) {
+			WP_CLI::error( 'The "enable" argument must be specified.' );
+			return;
+		}
+
+		switch( $assoc_args['enable'] ) {
+			case 'true':
+				update_rocket_option( 'cdn', true );
+
+				if ( ! empty( $assoc_args['host'] ) ) {
+					$cdn_cnames = get_rocket_option( 'cdn_cnames', true );
+					$cdn_zones  = get_rocket_option( 'cdn_zone', true );
+					$cname      = $assoc_args['host'];
+					$zone       = ( ! empty( $assoc_args['zone'] ) ? $assoc_args['zone'] : 'all' );
+					$exists     = array_search( $cname, $cdn_cnames );
+					if ( false === $exists ) {
+						// CNAME does not exist. Set it the last element.
+						$exists = count( $cdn_cnames );
+					}
+
+					$cdn_cnames[ $exists ] = $cname;
+					$cdn_zones[ $exists ]  = $zone;
+
+					update_rocket_option( 'cdn_cnames', $cdn_cnames );
+					update_rocket_option( 'cdn_zone', $cdn_zones );
+					$this->clean_wp_rocket_cache( true );
+
+					WP_CLI::success( 'CDN enabled successfully with CNAME=<' . $cname .'> and zone=<' . $zone . '>' );
+					break;
+				}
+
+				$this->clean_wp_rocket_cache( true );
+				WP_CLI::success( 'CDN enabled successfully without CNAME' );
+				break;
+			case 'false':
+				update_rocket_option( 'cdn', false );
+				$this->clean_wp_rocket_cache( true );
+				WP_CLI::success( 'CDN disabled successfully!' );
+				break;
+			default:
+			WP_CLI::error( 'The "enable" argument must contain either true or false value.' );
+				break;
+		}
+	}
+
+	/**
+	 * Clean WP Rocket domain and additional cache files.
+	 *
+	 * @param boolean $minify Clean also minify cache files.
+	 * @return void
+	 */
+	private function clean_wp_rocket_cache( $minify = false ) {
+		rocket_clean_domain();
+
+		if ( $minify ) {
+			// Remove all minify cache files.
+			rocket_clean_minify();
+			// Generate a new random key for minify cache file.
+			update_rocket_option( 'minify_css_key', create_rocket_uniqid() );
+			update_rocket_option( 'minify_js_key', create_rocket_uniqid() );
+		}
+	}
 }
 
 WP_CLI::add_command( 'rocket', 'WPRocket_CLI' );
