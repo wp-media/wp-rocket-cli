@@ -1,5 +1,6 @@
 <?php
 
+use function WP_CLI\Utils\make_progress_bar;
 use WP_Rocket\Engine\Cache\WPCache;
 
 /**
@@ -159,7 +160,7 @@ class WPRocket_CLI extends WP_CLI_Command {
 			$permalinks = explode( ',' , $assoc_args['permalink'] );
 			$total      = count( $permalinks );
 
-			$notify = \WP_CLI\Utils\make_progress_bar( 'Delete cache files', $total );
+			$notify = make_progress_bar( 'Delete cache files', $total );
 
 			foreach ( $permalinks as $permalink ) {
 				$permalink = trim( $permalink );
@@ -177,7 +178,7 @@ class WPRocket_CLI extends WP_CLI_Command {
 			$total    = 0;
 			$post_ids = explode( ',' , $assoc_args['post_id'] );
 
-			$notify = \WP_CLI\Utils\make_progress_bar( 'Delete cache files', count( $post_ids ) );
+			$notify = make_progress_bar( 'Delete cache files', count( $post_ids ) );
 
 			foreach ( $post_ids as $post_id ) {
 				$post_id = trim( $post_id );
@@ -245,7 +246,7 @@ class WPRocket_CLI extends WP_CLI_Command {
 			if ( run_rocket_bot() ) {
 				WP_CLI::success( 'Triggering homepage-based preloading.' );
 			}else{
-				WP_CLI::error( 'Can\'t start preload cache, please check preload option is activated.' );
+				WP_CLI::error( 'Cannot start preload cache, please check preload option is activated.' );
 			}
 		}
 
@@ -280,7 +281,7 @@ class WPRocket_CLI extends WP_CLI_Command {
 					if ( rocket_generate_advanced_cache_file() ) {
 						WP_CLI::success( 'The advanced-cache.php file has just been regenerated.' );
 					}else{
-						WP_CLI::error( 'Can\'t generate advanced-cache.php file, please check folder permissions.' );
+						WP_CLI::error( 'Cannot generate advanced-cache.php file, please check folder permissions.' );
 					}
 					break;
 				case 'config':
@@ -296,16 +297,16 @@ class WPRocket_CLI extends WP_CLI_Command {
 					if ( flush_rocket_htaccess() ) {
 						WP_CLI::success( 'The .htaccess file has just been regenerated.' );
 					}else{
-						WP_CLI::error( 'Can\'t generate .htaccess file.' );
+						WP_CLI::error( 'Cannot generate .htaccess file.' );
 					}
 					break;
 				default:
-					WP_CLI::error( 'You didn\'t specify a good value for the "file" argument. It should be: advanced-cache, config or htaccess.' );
+					WP_CLI::error( 'You did not specify a good value for the "file" argument. It should be: advanced-cache, config or htaccess.' );
 					break;
 			}
 
 		} else {
-			WP_CLI::error( 'You didn\'t specify the "file" argument.' );
+			WP_CLI::error( 'You did not specify the "file" argument.' );
 		}
 	}
 }
