@@ -26,6 +26,10 @@ class WPRocket_CLI extends WP_CLI_Command {
 	 * @subcommand activate-cache
 	 */
 	public function activate_cache() {
+		if ( ! is_plugin_active( 'wp-rocket/wp-rocket.php') ) {
+			WP_CLI::error( 'WP Rocket is not enabled.' );
+		}
+
 		if ( defined( 'WP_CACHE' ) && ! WP_CACHE ) {
 			$wp_cache = new WPCache( rocket_direct_filesystem() );
 
@@ -402,24 +406,6 @@ class WPRocket_CLI extends WP_CLI_Command {
 			default:
 			WP_CLI::error( 'The "enable" argument must contain either true or false value.' );
 				break;
-		}
-	}
-
-	/**
-	 * Clean WP Rocket domain and additional cache files.
-	 *
-	 * @param boolean $minify Clean also minify cache files.
-	 * @return void
-	 */
-	private function clean_wp_rocket_cache( $minify = false ) {
-		rocket_clean_domain();
-
-		if ( $minify ) {
-			// Remove all minify cache files.
-			rocket_clean_minify();
-			// Generate a new random key for minify cache file.
-			update_rocket_option( 'minify_css_key', create_rocket_uniqid() );
-			update_rocket_option( 'minify_js_key', create_rocket_uniqid() );
 		}
 	}
 
