@@ -1,6 +1,6 @@
 <?php
 
-use \WP_Rocket\Engine\Cache\WPCache;
+use WP_Rocket\Engine\Cache\WPCache;
 
 /**
  * Manage Revisions
