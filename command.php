@@ -46,6 +46,8 @@ class WPRocket_CLI extends WP_CLI_Command {
 
 						if ( ! flush_rocket_htaccess() ) {
 							WP_CLI::warning( 'Adding WP Rocket rules to the htaccess file failed.');
+						} else {
+							WP_CLI::success( 'WP Rocket rules added to the htaccess file.');
 						}
 					}
 				}
@@ -96,6 +98,8 @@ class WPRocket_CLI extends WP_CLI_Command {
 
 						if ( ! flush_rocket_htaccess( true ) ) {
 							WP_CLI::warning( 'Removing WP Rocket rules from the htaccess file failed.');
+						} else {
+							WP_CLI::success( 'WP Rocket rules removed from the htaccess file.');
 						}
 					}
 				}
