@@ -41,7 +41,7 @@ class WPRocket_CLI extends WP_CLI_Command {
 			if ( $wp_cache->set_wp_cache_constant( true ) ) {
 				if ( rocket_valid_key() ) {
 					// Add All WP Rocket rules of the .htaccess file.
-					if ( isset( $assoc_args['htaccess'] ) && $assoc_args['htaccess'] ) {
+					if ( isset( $assoc_args['htaccess'] ) && 'true' === $assoc_args['htaccess'] ) {
 						self::set_apache();
 
 						if ( ! flush_rocket_htaccess() ) {
@@ -91,7 +91,7 @@ class WPRocket_CLI extends WP_CLI_Command {
 			if ( $wp_cache->set_wp_cache_constant( false ) ) {
 				if ( rocket_valid_key() ) {
 					// Remove All WP Rocket rules from the .htaccess file.
-					if ( isset( $assoc_args['htaccess'] ) && $assoc_args['htaccess'] ) {
+					if ( isset( $assoc_args['htaccess'] ) && 'true' === $assoc_args['htaccess'] ) {
 						self::set_apache();
 
 						if ( ! flush_rocket_htaccess( true ) ) {
