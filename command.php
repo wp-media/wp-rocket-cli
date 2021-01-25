@@ -342,7 +342,7 @@ class WPRocket_CLI extends WP_CLI_Command {
 					WP_CLI::success( 'The config file has just been regenerated.' );
 					break;
 				case 'htaccess':
-					$GLOBALS['is_apache'] = true;
+					self::set_apache();
 					if ( flush_rocket_htaccess() ) {
 						WP_CLI::success( 'The .htaccess file has just been regenerated.' );
 					}else{
