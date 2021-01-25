@@ -29,6 +29,8 @@ class WPRocket_CLI extends WP_CLI_Command {
 		if ( ! is_plugin_active( 'wp-rocket/wp-rocket.php') ) {
 			WP_CLI::error( 'WP Rocket is not enabled.' );
 		}
+	
+		self::apache_modules();
 
 		if ( defined( 'WP_CACHE' ) && ! WP_CACHE ) {
 			$wp_cache = new WPCache( rocket_direct_filesystem() );
@@ -71,13 +73,15 @@ class WPRocket_CLI extends WP_CLI_Command {
 	 * @subcommand deactivate-cache
 	 */
 	public function deactivate_cache() {
+		self::apache_modules();
+
 		if ( defined( 'WP_CACHE' ) && WP_CACHE ) {
 			$wp_cache = new WPCache( rocket_direct_filesystem() );
 
 			if ( $wp_cache->set_wp_cache_constant( false ) ) {
 				if ( rocket_valid_key() ) {
-					// Add All WP Rocket rules of the .htaccess file.
-					if ( ! flush_rocket_htaccess() ) {
+					// Remove All WP Rocket rules from the .htaccess file.
+					if ( ! flush_rocket_htaccess( true ) ) {
 						WP_CLI::warning( 'Removing WP Rocket rules from the htaccess file failed.');
 					}
 				}
@@ -424,6 +428,22 @@ class WPRocket_CLI extends WP_CLI_Command {
 			// Generate a new random key for minify cache file.
 			update_rocket_option( 'minify_css_key', create_rocket_uniqid() );
 			update_rocket_option( 'minify_js_key', create_rocket_uniqid() );
+		}
+	}
+
+	/**
+	 * Detect if we are currently on Apache, by using the value in the configuration file
+	 *
+	 * @return void
+	 */
+	private static function apache_modules() {
+		if ( in_array( 'mod_rewrite', (array) WP_CLI::get_config( 'apache_modules' ), true ) ) {
+			global $is_apache;
+			// phpcs:ignore WordPress.WP.GlobalVariablesOverride.Prohibited
+			$is_apache = true;
+
+			// needed for get_home_path() and .htaccess location
+			$_SERVER['SCRIPT_FILENAME'] = ABSPATH;
 		}
 	}
 }
