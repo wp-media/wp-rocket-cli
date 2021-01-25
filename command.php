@@ -87,6 +87,10 @@ class WPRocket_CLI extends WP_CLI_Command {
 	 * @subcommand deactivate-cache
 	 */
 	public function deactivate_cache( array $args = [], array $assoc_args = [] ) {
+		if ( ! is_plugin_active( 'wp-rocket/wp-rocket.php') ) {
+			WP_CLI::error( 'WP Rocket is not enabled.' );
+		}
+
 		if ( defined( 'WP_CACHE' ) && WP_CACHE ) {
 			$wp_cache = new WPCache( rocket_direct_filesystem() );
 
