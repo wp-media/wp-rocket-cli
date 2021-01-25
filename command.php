@@ -19,18 +19,21 @@ class WPRocket_CLI extends WP_CLI_Command {
 	/**
 	 * Set WP_CACHE constant in wp-config.php to true and update htaccess
 	 *
+	 * ## OPTIONS
+	 *
+	 * [--htaccess=<bool>]
+	 * : Enable update of the htaccess file.
+	 *
 	 * ## EXAMPLES
 	 *
 	 *     wp rocket activate-cache
 	 *
 	 * @subcommand activate-cache
 	 */
-	public function activate_cache() {
+	public function activate_cache( array $args = [], array $assoc_args = [] ) {
 		if ( ! is_plugin_active( 'wp-rocket/wp-rocket.php') ) {
 			WP_CLI::error( 'WP Rocket is not enabled.' );
 		}
-	
-		self::apache_modules();
 
 		if ( defined( 'WP_CACHE' ) && ! WP_CACHE ) {
 			$wp_cache = new WPCache( rocket_direct_filesystem() );
@@ -38,8 +41,12 @@ class WPRocket_CLI extends WP_CLI_Command {
 			if ( $wp_cache->set_wp_cache_constant( true ) ) {
 				if ( rocket_valid_key() ) {
 					// Add All WP Rocket rules of the .htaccess file.
-					if ( ! flush_rocket_htaccess() ) {
-						WP_CLI::warning( 'Adding WP Rocket rules to the htaccess file failed.');
+					if ( isset( $assoc_args['htaccess'] ) && $assoc_args['htaccess'] ) {
+						self::set_apache();
+
+						if ( ! flush_rocket_htaccess() ) {
+							WP_CLI::warning( 'Adding WP Rocket rules to the htaccess file failed.');
+						}
 					}
 				}
 				// Clean WP Rocket Cache and Minified files.
@@ -66,23 +73,30 @@ class WPRocket_CLI extends WP_CLI_Command {
 	/**
 	 * Set WP_CACHE constant in wp-config.php to false and update htaccess
 	 *
+	 * ## OPTIONS
+	 *
+	 * [--htaccess=<bool>]
+	 * : Enable update of the htaccess file.
+	 *
 	 * ## EXAMPLES
 	 *
 	 *     wp rocket deactivate-cache
 	 *
 	 * @subcommand deactivate-cache
 	 */
-	public function deactivate_cache() {
-		self::apache_modules();
-
+	public function deactivate_cache( array $args = [], array $assoc_args = [] ) {
 		if ( defined( 'WP_CACHE' ) && WP_CACHE ) {
 			$wp_cache = new WPCache( rocket_direct_filesystem() );
 
 			if ( $wp_cache->set_wp_cache_constant( false ) ) {
 				if ( rocket_valid_key() ) {
 					// Remove All WP Rocket rules from the .htaccess file.
-					if ( ! flush_rocket_htaccess( true ) ) {
-						WP_CLI::warning( 'Removing WP Rocket rules from the htaccess file failed.');
+					if ( isset( $assoc_args['htaccess'] ) && $assoc_args['htaccess'] ) {
+						self::set_apache();
+
+						if ( ! flush_rocket_htaccess( true ) ) {
+							WP_CLI::warning( 'Removing WP Rocket rules from the htaccess file failed.');
+						}
 					}
 				}
 				// Clean WP Rocket Cache and Minified files.
@@ -432,19 +446,17 @@ class WPRocket_CLI extends WP_CLI_Command {
 	}
 
 	/**
-	 * Detect if we are currently on Apache, by using the value in the configuration file
+	 * Set global Apache variable to true
 	 *
 	 * @return void
 	 */
-	private static function apache_modules() {
-		if ( in_array( 'mod_rewrite', (array) WP_CLI::get_config( 'apache_modules' ), true ) ) {
-			global $is_apache;
-			// phpcs:ignore WordPress.WP.GlobalVariablesOverride.Prohibited
-			$is_apache = true;
+	private static function set_apache() {
+		global $is_apache;
+		// phpcs:ignore WordPress.WP.GlobalVariablesOverride.Prohibited
+		$is_apache = true;
 
-			// needed for get_home_path() and .htaccess location
-			$_SERVER['SCRIPT_FILENAME'] = ABSPATH;
-		}
+		// needed for get_home_path() and .htaccess location
+		$_SERVER['SCRIPT_FILENAME'] = ABSPATH;
 	}
 }
 
