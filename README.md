@@ -1,12 +1,12 @@
 
-## CLI interface for the WP Rocket
+## WP CLI interface for WP Rocket
 
 This repository contains a [WP-CLI command](https://github.com/wp-cli/wp-cli)  for the [WP Rocket](http://wp-rocket.me) plugin. After installing this plugin, you will have access to a `wp rocket` command.
 
-Supported commands:
+## Supported commands
 
-* `wp rocket activate-cache` -- Set WP_CACHE to true, flush htaccess rules and clean WP Rocket cache.
-* `wp rocket deactivate-cache` -- Set WP_CACHE to false, flush htaccess rules and clean WP Rocket cache.
+* `wp rocket activate-cache --htaccess=<true|false>` -- Set WP_CACHE to true and clean WP Rocket cache. To also update the htaccess on Apache, use the additional `htaccess` parameter.
+* `wp rocket deactivate-cache --htaccess=<true|false>` -- Set WP_CACHE to false and clean WP Rocket cache. To also update the htaccess on Apache, use the additional `htaccess` parameter.
 * `wp rocket clean --post_id=<post_id> --permalink=<permalink> --lang=<lang> --blog_id=<blog_id>` -- Purge cache files.
 * `wp rocket clean --confirm` -- Purge cache files without prompting for confirmation (usefull for automation tools/scripts)
 * `wp rocket preload` -- Preload cache files.
@@ -18,16 +18,4 @@ Supported commands:
 
 If you're using WP-CLI v0.23.0 or later, you can install this package with:
 
-```
-wp package install wp-media/wp-rocket-cli
-```
-
-## Changelog
-
-### 1.1
-
-* Add `regenerate` command.
-
-### 1.0
-
-* Initial release
+`wp package install wp-media/wp-rocket-cli`
