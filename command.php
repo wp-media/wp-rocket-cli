@@ -7,59 +7,116 @@ use WP_Rocket\Engine\Cache\WPCache;
  * Manage Revisions
  */
 class WPRocket_CLI extends WP_CLI_Command {
+	/**
+	 * Backward compatibility method
+	 *
+	 * @return void
+	 */
+	public function activate() {
+		$this->activate_cache();
+	}
 
 	/**
-	 * Set WP_CACHE constant in wp-config.php to true
+	 * Set WP_CACHE constant in wp-config.php to true and update htaccess
+	 *
+	 * ## OPTIONS
+	 *
+	 * [--htaccess=<bool>]
+	 * : Enable update of the htaccess file.
 	 *
 	 * ## EXAMPLES
 	 *
-	 *     wp rocket activate
+	 *     wp rocket activate-cache
 	 *
-	 * @subcommand activate
+	 * @subcommand activate-cache
 	 */
-	public function activate() {
+	public function activate_cache( array $args = [], array $assoc_args = [] ) {
+		if ( ! is_plugin_active( 'wp-rocket/wp-rocket.php') ) {
+			WP_CLI::error( 'WP Rocket is not enabled.' );
+		}
 
-		if( defined( 'WP_CACHE' ) && ! WP_CACHE ) {
-
+		if ( defined( 'WP_CACHE' ) && ! WP_CACHE ) {
 			$wp_cache = new WPCache( rocket_direct_filesystem() );
 
 			if ( $wp_cache->set_wp_cache_constant( true ) ) {
+				if ( rocket_valid_key() ) {
+					// Add All WP Rocket rules of the .htaccess file.
+					if ( isset( $assoc_args['htaccess'] ) && 'true' === $assoc_args['htaccess'] ) {
+						self::set_apache();
+
+						if ( ! flush_rocket_htaccess() ) {
+							WP_CLI::warning( 'Adding WP Rocket rules to the htaccess file failed.');
+						} else {
+							WP_CLI::success( 'WP Rocket rules added to the htaccess file.');
+						}
+					}
+				}
+				// Clean WP Rocket Cache and Minified files.
+				$this->clean_wp_rocket_cache( true );
+
 				WP_CLI::success( 'WP Rocket is now enabled, WP_CACHE is set to true.' );
 			} else {
 				WP_CLI::error( 'Error while setting WP_CACHE constant into wp-config.php!' );
 			}
-
 		} else {
 			WP_CLI::error( 'WP Rocket is already enabled.' );
 		}
-
 	}
 
 	/**
-	 * Set WP_CACHE constant in wp-config.php to false
+	 * Backward compatibility method
+	 *
+	 * @return void
+	 */
+	public function deactivate() {
+		$this->deactivate_cache();
+	}
+
+	/**
+	 * Set WP_CACHE constant in wp-config.php to false and update htaccess
+	 *
+	 * ## OPTIONS
+	 *
+	 * [--htaccess=<bool>]
+	 * : Enable update of the htaccess file.
 	 *
 	 * ## EXAMPLES
 	 *
-	 *     wp rocket deactivate
+	 *     wp rocket deactivate-cache
 	 *
-	 * @subcommand deactivate
+	 * @subcommand deactivate-cache
 	 */
-	public function deactivate() {
+	public function deactivate_cache( array $args = [], array $assoc_args = [] ) {
+		if ( ! is_plugin_active( 'wp-rocket/wp-rocket.php') ) {
+			WP_CLI::error( 'WP Rocket is not enabled.' );
+		}
 
-		if( defined( 'WP_CACHE' ) && WP_CACHE ) {
-
+		if ( defined( 'WP_CACHE' ) && WP_CACHE ) {
 			$wp_cache = new WPCache( rocket_direct_filesystem() );
 
 			if ( $wp_cache->set_wp_cache_constant( false ) ) {
+				if ( rocket_valid_key() ) {
+					// Remove All WP Rocket rules from the .htaccess file.
+					if ( isset( $assoc_args['htaccess'] ) && 'true' === $assoc_args['htaccess'] ) {
+						self::set_apache();
+
+						if ( ! flush_rocket_htaccess( true ) ) {
+							WP_CLI::warning( 'Removing WP Rocket rules from the htaccess file failed.');
+						} else {
+							WP_CLI::success( 'WP Rocket rules removed from the htaccess file.');
+						}
+					}
+				}
+				// Clean WP Rocket Cache and Minified files.
+				$this->clean_wp_rocket_cache( true );
+
 				WP_CLI::success( 'WP Rocket is now disabled, WP_CACHE is set to false.' );
 			} else {
 				WP_CLI::error( 'Error while setting WP_CACHE constant into wp-config.php!' );
 			}
-
 		} else {
 			WP_CLI::error( 'WP Rocket is already disabled.' );
 		}
-
 	}
 
 	/**
@@ -311,7 +368,7 @@ class WPRocket_CLI extends WP_CLI_Command {
 					WP_CLI::success( 'The config file has just been regenerated.' );
 					break;
 				case 'htaccess':
-					$GLOBALS['is_apache'] = true;
+					self::set_apache();
 					if ( flush_rocket_htaccess() ) {
 						WP_CLI::success( 'The .htaccess file has just been regenerated.' );
 					}else{
@@ -412,6 +469,20 @@ class WPRocket_CLI extends WP_CLI_Command {
 			update_rocket_option( 'minify_css_key', create_rocket_uniqid() );
 			update_rocket_option( 'minify_js_key', create_rocket_uniqid() );
 		}
+	}
+
+	/**
+	 * Set global Apache variable to true
+	 *
+	 * @return void
+	 */
+	private static function set_apache() {
+		global $is_apache;
+		// phpcs:ignore WordPress.WP.GlobalVariablesOverride.Prohibited
+		$is_apache = true;
+
+		// needed for get_home_path() and .htaccess location
+		$_SERVER['SCRIPT_FILENAME'] = ABSPATH;
 	}
 }
 
