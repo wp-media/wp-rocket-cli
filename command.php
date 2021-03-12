@@ -454,6 +454,133 @@ class WPRocket_CLI extends WP_CLI_Command {
 	}
 
 	/**
+	 * Export Settings.
+	 *
+	 * ## EXAMPLES
+	 *
+	 *     wp rocket export
+	 *
+	 * @subcommand export
+	 */
+	public function export( $args = array(), $assoc_args = array() ) {
+
+		if ( ! is_plugin_active( 'wp-rocket/wp-rocket.php' ) ) {
+			WP_CLI::error( 'WP Rocket is not enabled.' );
+		}
+
+		$filename = sprintf( 'wp-rocket-settings-%s-%s.json', date( 'Y-m-d' ), uniqid() ); // phpcs:ignore WordPress.DateTime.RestrictedFunctions.date_date
+		$gz       = 'gz' . strrev( 'etalfed' );
+		$options  = wp_json_encode( get_option( 'wp_rocket_settings' ) );
+
+		$file = fopen( $filename, 'w' );
+		$res  = fwrite( $file, $options );
+		if ( false === $res ) {
+			WP_CLI::error( 'Export: error writing to export file.' );
+		} else {
+			WP_CLI::success( 'Successfully exported in ' . $filename );
+		}
+		fclose( $file );
+
+	}
+
+	/**
+	 * Import Settings JSON.
+	 *
+	 * ## OPTIONS
+	 *
+	 * [--file=<file>]
+	 * : The Json file to import. It could be:
+	 *  - example.json
+	 *  - https://example.com/example.json
+	 *
+	 * ## EXAMPLES
+	 *
+	 *     wp rocket import --file=example.json
+	 *     wp rocket import --file=https://example.com/example.json
+	 *
+	 * @subcommand import
+	 */
+	public function import( $args = array(), $assoc_args = array() ) {
+
+		if ( ! is_plugin_active( 'wp-rocket/wp-rocket.php' ) ) {
+			WP_CLI::error( 'WP Rocket is not enabled.' );
+		}
+
+		if ( empty( $assoc_args['file'] ) ) {
+			WP_CLI::error( 'The "file" argument must be specified.' );
+			return;
+		}
+		$file           = $assoc_args['file'];
+		$is_file_remote = function_exists( 'wp_parse_url' ) ? wp_parse_url( $file, PHP_URL_HOST ) : parse_url( $file, PHP_URL_HOST );
+
+		if ( empty( $is_file_remote ) ) {
+			if ( ! file_exists( $file ) ) {
+				WP_CLI::warning( "Unable to import file '$file'. Reason: File doesn't exist." );
+				return;
+			}
+			$tempfile = $file;
+			$name     = basename( $file );
+
+		} else {
+			$tempfile = download_url( $file );
+			if ( is_wp_error( $tempfile ) ) {
+				WP_CLI::warning(
+					sprintf(
+						"Unable to import file '%s'. Reason: %s",
+						$file,
+						implode( ', ', $tempfile->get_error_messages() )
+					)
+				);
+				return;
+			}
+			$name = strtok( basename( $file ), '?' );
+		}
+		$mimes         = array();
+		$mimes['json'] = 'application/json';
+		$file_data     = wp_check_filetype( $tempfile, $mimes );
+
+		if ( 'text/plain' !== $file_data['type'] && 'application/json' !== $file_data['type'] ) {
+			WP_CLI::error( 'Settings import failed: incorrect filetype' );
+			return;
+		}
+
+		$settings = file_get_contents( $tempfile );
+
+		if ( 'text/plain' === $file_data['type'] ) {
+			$gz       = 'gz' . strrev( 'etalfni' );
+			$settings = $gz( $settings );
+			$settings = maybe_unserialize( $settings );
+		} elseif ( 'application/json' === $file_data['type'] ) {
+			$settings = json_decode( $settings, true );
+
+			if ( null === $settings ) {
+				WP_CLI::error( 'Settings import failed: unexpected file content.' );
+				return;
+			}
+		}
+
+		if ( is_array( $settings ) ) {
+			$options_api     = new WP_Rocket\Admin\Options( 'wp_rocket_' );
+			$current_options = $options_api->get( 'settings', array() );
+
+			$settings['consumer_key']     = $current_options['consumer_key'];
+			$settings['consumer_email']   = $current_options['consumer_email'];
+			$settings['secret_key']       = $current_options['secret_key'];
+			$settings['secret_cache_key'] = $current_options['secret_cache_key'];
+			$settings['minify_css_key']   = $current_options['minify_css_key'];
+			$settings['minify_js_key']    = $current_options['minify_js_key'];
+			$settings['version']          = $current_options['version'];
+
+			$options_api->set( 'settings', $settings );
+
+			WP_CLI::success( 'Settings imported and saved.' );
+		} else {
+			WP_CLI::error( 'Settings import failed: unexpected file content.' );
+		}
+
+	}
+
+	/**
 	 * Clean WP Rocket domain and additional cache files.
 	 *
 	 * @param boolean $minify Clean also minify cache files.
