@@ -20,4 +20,4 @@ This repository contains a [WP-CLI command](https://github.com/wp-cli/wp-cli)  f
 
 If you're using WP-CLI v0.23.0 or later, you can install this package with:
 
-`wp package install wp-media/wp-rocket-cli`
+`wp package install wp-media/wp-rocket-cli:trunk`
