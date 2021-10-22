@@ -4,7 +4,7 @@ use function WP_CLI\Utils\make_progress_bar;
 use WP_Rocket\Engine\Cache\WPCache;
 
 /**
- * Manage Revisions
+ * Manage site performance, cache, preload, cdn...
  */
 class WPRocket_CLI extends WP_CLI_Command {
 	/**
