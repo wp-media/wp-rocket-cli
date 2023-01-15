@@ -34,7 +34,7 @@ class WPRocket_CLI extends WP_CLI_Command {
 		if ( ! is_plugin_active( 'wp-rocket/wp-rocket.php') ) {
 			WP_CLI::error( 'WP Rocket is not enabled.' );
 		}
-jjj
+
 		if ( defined( 'WP_CACHE' ) && ! WP_CACHE ) {
 			$wp_cache = new WPCache( rocket_direct_filesystem() );
 
