@@ -84,6 +84,7 @@ class WPRocket_CLI extends WP_CLI_Command {
 	 *
 	 *     wp rocket deactivate-cache
 	 *
+	 * @subcommand deactivate-cache
 	 */
 	public function deactivate_cache( array $args = [], array $assoc_args = [] ) {
 		if ( ! is_plugin_active( 'wp-rocket/wp-rocket.php') ) {
@@ -130,7 +131,7 @@ class WPRocket_CLI extends WP_CLI_Command {
 	 *
 	 *     wp rocket bedrock-init
 	 *
-	 * @subcommand activate-cache
+	 * @subcommand bedrock-init
 	 */
 	public function bedrock_init( array $args = [], array $assoc_args = [] ) {
 		if ( ! is_plugin_active( 'wp-rocket/wp-rocket.php') ) {
