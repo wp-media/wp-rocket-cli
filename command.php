@@ -181,6 +181,8 @@ class WPRocket_CLI extends WP_CLI_Command {
 				}else{
 					WP_CLI::error( 'Cannot generate .htaccess file.' );
 				}
+				WP_Rocket\Engine\Activation::activate_plugin();
+
 /*
 				wp_remote_get(
 					'https://staging.allius.de'/*home_url()*/,
