@@ -150,25 +150,11 @@ class WPRocket_CLI extends WP_CLI_Command {
 
 		WP_CLI::success( 'WP_CACHE is set to ' . (WP_CACHE ? 'true' : 'false') );
 
-		//$wp_cache = new WPCache( rocket_direct_filesystem() );
+		$wp_cache = new WPCache( rocket_direct_filesystem() );
 
 		if ( rocket_valid_key() ) {
 				
 			if ( WP_CACHE ) {
-				self::set_apache();
-				if ( flush_rocket_htaccess() ) {
-					WP_CLI::success( 'The .htaccess file has just been regenerated.' );
-				}else{
-					WP_CLI::error( 'Cannot generate .htaccess file.' );
-				}	
-
-				// Create the cache folders (wp-rocket & min).
-				rocket_init_cache_dir();
-
-				// Create the config folder (wp-rocket-config).
-				//rocket_init_config_dir();
-
-
 				if ( rocket_generate_advanced_cache_file() ) {
 					WP_CLI::success( 'The advanced-cache.php file has just been regenerated.' );
 				}else{
@@ -181,30 +167,13 @@ class WPRocket_CLI extends WP_CLI_Command {
 				rocket_generate_config_file();
 				WP_CLI::success( 'The config file has just been regenerated.' );
 
-				// Clean WP Rocket Cache and Minified files.
-				$this->clean_wp_rocket_cache( true );
 
-				WP_CLI::success( 'WP Rocket is now '  . (WP_CACHE ? 'enabled' : 'disabled') );
-
-
-				// Update customer key & licence.
-				/*
-		wp_remote_get(
-			WP_ROCKET_WEB_API . 'activate-licence.php',
-			[
-				'blocking' => false,
-			]
-		);
-*/
-				wp_remote_get(
-					home_url(),
-					[
-				'timeout'    => 0.01,
-				'blocking'   => false,
-				'user-agent' => 'WP Rocket/Homepage Preload',
-				'sslverify'  => apply_filters( 'https_local_ssl_verify', false ), // phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedHooknameFound
-					]
-				);
+				self::set_apache();
+				if ( flush_rocket_htaccess() ) {
+					WP_CLI::success( 'The .htaccess file has just been regenerated.' );
+				}else{
+					WP_CLI::error( 'Cannot generate .htaccess file.' );
+				}
 							
 			} else {
 				// Remove All WP Rocket rules from the .htaccess file.
@@ -215,16 +184,14 @@ class WPRocket_CLI extends WP_CLI_Command {
 				} else {
 					WP_CLI::success( 'WP Rocket rules removed from the htaccess file.');
 				}
-
-				// Clean WP Rocket Cache and Minified files.
-				$this->clean_wp_rocket_cache( true );
-
-				WP_CLI::success( 'WP Rocket is now '  . (WP_CACHE ? 'enabled' : 'disabled') );
-
 			}
 		}
 
-		}
+		// Clean WP Rocket Cache and Minified files.
+		$this->clean_wp_rocket_cache( true );
+
+		WP_CLI::success( 'WP Rocket is now '  . (WP_CACHE ? 'enabled' : 'disabled') );
+	}
 
 	/**
 	 * Purge cache files
