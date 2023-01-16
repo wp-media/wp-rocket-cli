@@ -150,11 +150,18 @@ class WPRocket_CLI extends WP_CLI_Command {
 
 		WP_CLI::success( 'WP_CACHE is set to ' . (WP_CACHE ? 'true' : 'false') );
 
-		$wp_cache = new WPCache( rocket_direct_filesystem() );
-
 		if ( rocket_valid_key() ) {
 				
 			if ( WP_CACHE ) {
+				$actual_version = (string) get_rocket_option( 'version' );
+				WP_CLI::success( 'Wp rockert ' .  $actual_version . ' => ' . WP_ROCKET_VERSION);
+	
+				// Create the cache folders (wp-rocket & min).
+				//rocket_init_cache_dir();
+
+				// Create the config folder (wp-rocket-config).
+				//rocket_init_config_dir();
+
 				if ( rocket_generate_advanced_cache_file() ) {
 					WP_CLI::success( 'The advanced-cache.php file has just been regenerated.' );
 				}else{
@@ -174,7 +181,17 @@ class WPRocket_CLI extends WP_CLI_Command {
 				}else{
 					WP_CLI::error( 'Cannot generate .htaccess file.' );
 				}
-							
+/*
+				wp_remote_get(
+					'https://staging.allius.de'/*home_url()*/,
+					[
+				'timeout'    => 0.01,
+				'blocking'   => false,
+				'user-agent' => 'WP Rocket/Homepage Preload',
+				'sslverify'  => apply_filters( 'https_local_ssl_verify', false ), // phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedHooknameFound
+					]
+				);
+*/						
 			} else {
 				// Remove All WP Rocket rules from the .htaccess file.
 				self::set_apache();
