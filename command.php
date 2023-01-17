@@ -155,6 +155,7 @@ class WPRocket_CLI extends WP_CLI_Command {
 			if ( WP_CACHE ) {
 				$actual_version = (string) get_rocket_option( 'version' );
 				WP_CLI::success( 'Wp rockert ' .  $actual_version . ' => ' . WP_ROCKET_VERSION);
+				WP_CLI::success( 'WP_CONTENT_DIR = ' . WP_CONTENT_DIR);
 	
 				// Create the cache folders (wp-rocket & min).
 				//rocket_init_cache_dir();
