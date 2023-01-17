@@ -184,7 +184,7 @@ class WPRocket_CLI extends WP_CLI_Command {
 				}
 /*
 				wp_remote_get(
-					'https://staging.allius.de'/*home_url()*/,
+					home_url(),
 					[
 				'timeout'    => 0.01,
 				'blocking'   => false,
