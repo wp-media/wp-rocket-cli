@@ -159,10 +159,10 @@ class WPRocket_CLI extends WP_CLI_Command {
 				WP_CLI::success( 'DOCUMENT_ROOT = ' . $_SERVER['DOCUMENT_ROOT']);
 	
 				// Create the cache folders (wp-rocket & min).
-				//rocket_init_cache_dir();
+				rocket_init_cache_dir();
 
 				// Create the config folder (wp-rocket-config).
-				//rocket_init_config_dir();
+				rocket_init_config_dir();
 
 				if ( rocket_generate_advanced_cache_file() ) {
 					WP_CLI::success( 'The advanced-cache.php file has just been regenerated.' );
@@ -183,17 +183,7 @@ class WPRocket_CLI extends WP_CLI_Command {
 				}else{
 					WP_CLI::error( 'Cannot generate .htaccess file.' );
 				}
-/*
-				wp_remote_get(
-					home_url(),
-					[
-				'timeout'    => 0.01,
-				'blocking'   => false,
-				'user-agent' => 'WP Rocket/Homepage Preload',
-				'sslverify'  => apply_filters( 'https_local_ssl_verify', false ), // phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedHooknameFound
-					]
-				);
-*/						
+
 			} else {
 				// Remove All WP Rocket rules from the .htaccess file.
 				self::set_apache();
