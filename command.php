@@ -158,11 +158,31 @@ class WPRocket_CLI extends WP_CLI_Command {
 				WP_CLI::success( 'WP_CONTENT_DIR = ' . WP_CONTENT_DIR);
 				WP_CLI::success( 'DOCUMENT_ROOT = ' . $_SERVER['DOCUMENT_ROOT']);
 	
+				add_filter('rocket_advanced_cache_file', function ($content) {
+					if ( defined( 'WP_CLI' ) && WP_CLI ) 
+					{
+					
+				
+					   $replacements = [
+							'|/staging.allius.de/deploy/releases/(.*)/web/app/plugins/wp-rocket/|' => 
+							'/var/www/vhosts/hosting181845.a2f78.netcup.net/staging.allius.de/deploy/releases/$1/web/app/plugins/wp-rocket/' ,
+							'|/staging.allius.de/deploy/releases/(.*)/web/app/wp-rocket-config/|' => 
+							'/var/www/vhosts/hosting181845.a2f78.netcup.net/staging.allius.de/deploy/releases/$1/web/app/wp-rocket-config/' ,
+							'|/staging.allius.de/deploy/releases/(.*)/web/app/cache/wp-rocket/|' => 
+							'/var/www/vhosts/hosting181845.a2f78.netcup.net/staging.allius.de/deploy/releases/$1/web/app/cache/wp-rocket/' ,
+						];
+				
+						foreach ( $replacements as $pattern => $repl ) {
+							$content = preg_replace( $pattern, $repl, $content);
+						 }
+				
+					}
+					return $content;
+				});
+				
+
 				// Create the cache folders (wp-rocket & min).
 				rocket_init_cache_dir();
-
-				// Create the config folder (wp-rocket-config).
-				rocket_init_config_dir();
 
 				if ( rocket_generate_advanced_cache_file() ) {
 					WP_CLI::success( 'The advanced-cache.php file has just been regenerated.' );
