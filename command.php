@@ -3,6 +3,8 @@
 use function WP_CLI\Utils\make_progress_bar;
 use WP_Rocket\Engine\Cache\WPCache;
 
+$dir_prefix = '';
+
 /**
  * Manage Revisions
  */
@@ -119,17 +121,21 @@ class WPRocket_CLI extends WP_CLI_Command {
 		}
 	}
 
+	
+
 	/**
-	 * Set WP_CACHE constant in wp-config.php to true and update htaccess
+	 * Read WP_CACHE constant from bedrock and (de)activate the cache
 	 *
 	 * ## OPTIONS
 	 *
-	 * [--htaccess=<bool>]
-	 * : Enable update of the htaccess file.
+	 * [--vhost_dir=<abs_path>]
+	 * : Use <abs_path> as prefix for webser directories when generating the 
+	 *   advanced-cache.php file. This is needed if the target is as virtual server,
+	 *   or runs under Plesk
 	 *
 	 * ## EXAMPLES
 	 *
-	 *     wp rocket bedrock-init
+	 *     wp rocket bedrock-init --vhost-dir='/var/www/vhosts/hosting123456.example.com'
 	 *
 	 * @subcommand bedrock-init
 	 */
@@ -154,32 +160,18 @@ class WPRocket_CLI extends WP_CLI_Command {
 				
 			if ( WP_CACHE ) {
 				$actual_version = (string) get_rocket_option( 'version' );
-				WP_CLI::success( 'Wp rockert ' .  $actual_version . ' => ' . WP_ROCKET_VERSION);
+				WP_CLI::success( 'Wp rocket ' .  $actual_version . ' => ' . WP_ROCKET_VERSION);
 				WP_CLI::success( 'WP_CONTENT_DIR = ' . WP_CONTENT_DIR);
 				WP_CLI::success( 'DOCUMENT_ROOT = ' . $_SERVER['DOCUMENT_ROOT']);
-	
-				add_filter('rocket_advanced_cache_file', function ($content) {
-					if ( defined( 'WP_CLI' ) && WP_CLI ) 
-					{
+
+				if (!empty( $assoc_args['vhost_dir'])){
+					global $dir_prefix;
+
+					$dir_prefix  = $assoc_args['vhost_dir'];
 					
-				
-					   $replacements = [
-							'|/staging.allius.de/deploy/releases/(.*)/web/app/plugins/wp-rocket/|' => 
-							'/var/www/vhosts/hosting181845.a2f78.netcup.net/staging.allius.de/deploy/releases/$1/web/app/plugins/wp-rocket/' ,
-							'|/staging.allius.de/deploy/releases/(.*)/web/app/wp-rocket-config/|' => 
-							'/var/www/vhosts/hosting181845.a2f78.netcup.net/staging.allius.de/deploy/releases/$1/web/app/wp-rocket-config/' ,
-							'|/staging.allius.de/deploy/releases/(.*)/web/app/cache/wp-rocket/|' => 
-							'/var/www/vhosts/hosting181845.a2f78.netcup.net/staging.allius.de/deploy/releases/$1/web/app/cache/wp-rocket/' ,
-						];
-				
-						foreach ( $replacements as $pattern => $repl ) {
-							$content = preg_replace( $pattern, $repl, $content);
-						 }
-				
-					}
-					return $content;
-				});
-				
+					add_filter('rocket_advanced_cache_file', array( &$this, 'advanced_cache_filter_cb')); 
+				}
+
 
 				// Create the cache folders (wp-rocket & min).
 				rocket_init_cache_dir();
@@ -221,6 +213,23 @@ class WPRocket_CLI extends WP_CLI_Command {
 
 		WP_CLI::success( 'WP Rocket is now '  . (WP_CACHE ? 'enabled' : 'disabled') );
 	}
+
+	public function advanced_cache_filter_cb ($content) {
+		global $dir_prefix;
+		 $replacements = [
+			 '#(^\$rocket_path[ ]*=[ ]*)\'/#m'  => '$1\'' . $dir_prefix ,
+			 '#(^\$rocket_config_path[ ]*=[ ]*)\'/#m'  => '$1\'' . $dir_prefix ,
+			 '#(^\$rocket_cache_path[ ]*=[ ]*)\'/#m'  => '$1\'' . $dir_prefix ,
+		 ];
+ 
+		 foreach ( $replacements as $pattern => $repl ) {
+			 $content = preg_replace( $pattern, $repl, $content);
+		 }
+ 
+		 return $content;
+	 }
+
+
 
 	/**
 	 * Purge cache files
