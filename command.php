@@ -161,8 +161,6 @@ class WPRocket_CLI extends WP_CLI_Command {
 			if ( WP_CACHE ) {
 				$actual_version = (string) get_rocket_option( 'version' );
 				WP_CLI::success( 'Wp rocket ' .  $actual_version . ' => ' . WP_ROCKET_VERSION);
-				WP_CLI::success( 'WP_CONTENT_DIR = ' . WP_CONTENT_DIR);
-				WP_CLI::success( 'DOCUMENT_ROOT = ' . $_SERVER['DOCUMENT_ROOT']);
 
 				if (!empty( $assoc_args['vhost_dir'])){
 					global $dir_prefix;
