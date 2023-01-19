@@ -3,6 +3,8 @@
 use function WP_CLI\Utils\make_progress_bar;
 use WP_Rocket\Engine\Cache\WPCache;
 
+$dir_prefix = '';
+
 /**
  * Manage Revisions
  */
@@ -118,6 +120,114 @@ class WPRocket_CLI extends WP_CLI_Command {
 			WP_CLI::error( 'WP Rocket is already disabled.' );
 		}
 	}
+
+	
+
+	/**
+	 * Read WP_CACHE constant from bedrock and (de)activate the cache
+	 *
+	 * ## OPTIONS
+	 *
+	 * [--vhost_dir=<abs_path>]
+	 * : Use <abs_path> as prefix for webser directories when generating the 
+	 *   advanced-cache.php file. This is needed if the target is as virtual server,
+	 *   or runs under Plesk
+	 *
+	 * ## EXAMPLES
+	 *
+	 *     wp rocket bedrock-init --vhost-dir='/var/www/vhosts/hosting123456.example.com'
+	 *
+	 * @subcommand bedrock-init
+	 */
+	public function bedrock_init( array $args = [], array $assoc_args = [] ) {
+		if ( ! is_plugin_active( 'wp-rocket/wp-rocket.php') ) {
+			WP_CLI::error( 'WP Rocket is not enabled.' );
+		}
+
+		if (apply_filters( 'rocket_set_wp_cache_constant', true ))
+		{
+			WP_CLI::error( 'WP_CACHE is not defined outside wp-config.php.' );	
+		}
+		
+		if ( !defined( 'WP_CACHE' ))
+		{
+			WP_CLI::error( 'WP_CACHE is not defined outside wp-config.php. Please check bedrocks configuration' );	
+		}
+
+		WP_CLI::success( 'WP_CACHE is set to ' . (WP_CACHE ? 'true' : 'false') );
+
+		if ( rocket_valid_key() ) {
+				
+			if ( WP_CACHE ) {
+				$actual_version = (string) get_rocket_option( 'version' );
+				WP_CLI::success( 'Wp rocket ' .  $actual_version . ' => ' . WP_ROCKET_VERSION);
+
+				if (!empty( $assoc_args['vhost_dir'])){
+					global $dir_prefix;
+
+					$dir_prefix  = $assoc_args['vhost_dir'];
+					
+					add_filter('rocket_advanced_cache_file', array( &$this, 'advanced_cache_filter_cb')); 
+				}
+
+
+				// Create the cache folders (wp-rocket & min).
+				rocket_init_cache_dir();
+
+				if ( rocket_generate_advanced_cache_file() ) {
+					WP_CLI::success( 'The advanced-cache.php file has just been regenerated.' );
+				}else{
+					WP_CLI::error( 'Cannot generate advanced-cache.php file, please check folder permissions.' );
+				}
+				if ( ! empty( $assoc_args['nginx'] ) && $assoc_args = true ) {
+					$GLOBALS['is_nginx'] = true;
+				}
+		
+				rocket_generate_config_file();
+				WP_CLI::success( 'The config file has just been regenerated.' );
+
+
+				self::set_apache();
+				if ( flush_rocket_htaccess() ) {
+					WP_CLI::success( 'The .htaccess file has just been regenerated.' );
+				}else{
+					WP_CLI::error( 'Cannot generate .htaccess file.' );
+				}
+
+			} else {
+				// Remove All WP Rocket rules from the .htaccess file.
+				self::set_apache();
+
+				if ( ! flush_rocket_htaccess( true ) ) {
+					WP_CLI::warning( 'Removing WP Rocket rules from the htaccess file failed.');
+				} else {
+					WP_CLI::success( 'WP Rocket rules removed from the htaccess file.');
+				}
+			}
+		}
+
+		// Clean WP Rocket Cache and Minified files.
+		$this->clean_wp_rocket_cache( true );
+
+		WP_CLI::success( 'WP Rocket is now '  . (WP_CACHE ? 'enabled' : 'disabled') );
+	}
+
+	public function advanced_cache_filter_cb ($content) {
+		global $dir_prefix;
+		 $replacements = [
+			 '#(^\$rocket_path[ ]*=[ ]*)\'/#m'  => '$1\'' . $dir_prefix ,
+			 '#(^\$rocket_config_path[ ]*=[ ]*)\'/#m'  => '$1\'' . $dir_prefix ,
+			 '#(^\$rocket_cache_path[ ]*=[ ]*)\'/#m'  => '$1\'' . $dir_prefix ,
+		 ];
+ 
+		 foreach ( $replacements as $pattern => $repl ) {
+			 $content = preg_replace( $pattern, $repl, $content);
+		 }
+ 
+		 return $content;
+	 }
+
+
 
 	/**
 	 * Purge cache files
