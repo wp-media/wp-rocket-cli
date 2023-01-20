@@ -124,7 +124,7 @@ class WPRocket_CLI extends WP_CLI_Command {
 	
 
 	/**
-	 * Read WP_CACHE constant from bedrock and (de)activate the cache
+	 * Initialises WP Rocket in a bedrock environment and activates/deactivates the cache depending on the WP_CACHE value defined by bedrock.
 	 *
 	 * ## OPTIONS
 	 *
@@ -138,7 +138,7 @@ class WPRocket_CLI extends WP_CLI_Command {
 	 *
 	 * ## EXAMPLES
 	 *
-	 *     wp rocket bedrock-init --vhost-dir='/var/www/vhosts/hosting123456.example.com'
+	 *     wp rocket bedrock-init --vhost-dir='/var/www/vhosts/hosting123456.example.cqom'
 	 *
 	 * @subcommand bedrock-init
 	 */
@@ -150,7 +150,7 @@ class WPRocket_CLI extends WP_CLI_Command {
 		// check if filter rocket_set_wp_cache_constant disallow writing to wp-config.php
 		if (apply_filters( 'rocket_set_wp_cache_constant', true ))
 		{
-			WP_CLI::success( 'disable writing to wp-config.php' );
+			WP_CLI::success( 'Disable writing in wp-config.php by WP Rocket' );
 
 			//writing is still allowed, so we disable it for this wp-cli run 
 			add_filter( 'rocket_set_wp_cache_constant', '__return_false' );
@@ -158,16 +158,16 @@ class WPRocket_CLI extends WP_CLI_Command {
 		
 		if ( !defined( 'WP_CACHE' ))
 		{
-			WP_CLI::error( 'WP_CACHE is not defined outside wp-config.php. Please check bedrocks configuration' );	
+			WP_CLI::error( 'WP_CACHE is not defined. Please check bedrocks configuration' );	
 		}
 
-		WP_CLI::success( 'WP_CACHE is set to ' . (WP_CACHE ? 'true' : 'false') );
+		WP_CLI::success( 'WP_CACHE is set to ' . (WP_CACHE ? 'TRUE => activate the cache' : 'FALSE => deactivate the cache') );
 
 		if ( rocket_valid_key() ) {
 				
 			if ( WP_CACHE ) {
 				$actual_version = (string) get_rocket_option( 'version' );
-				WP_CLI::success( 'Wp rocket ' .  $actual_version . ' => ' . WP_ROCKET_VERSION);
+				WP_CLI::success( 'WP Rocket ' .  $actual_version . ' => ' . WP_ROCKET_VERSION);
 
 				if (!empty( $assoc_args['vhost_dir'])){
 					global $dir_prefix;
