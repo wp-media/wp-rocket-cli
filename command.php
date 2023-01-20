@@ -129,9 +129,12 @@ class WPRocket_CLI extends WP_CLI_Command {
 	 * ## OPTIONS
 	 *
 	 * [--vhost_dir=<abs_path>]
-	 * : Use <abs_path> as prefix for webser directories when generating the 
+	 * : Use <abs_path> as prefix for web server directories when generating the 
 	 *   advanced-cache.php file. This is needed if the target is as virtual server,
 	 *   or runs under Plesk
+	 *
+	 * [--nginx=<bool>]
+	 * : The command should run as if on nginx (setting the $is_nginx global to true)
 	 *
 	 * ## EXAMPLES
 	 *
@@ -144,9 +147,13 @@ class WPRocket_CLI extends WP_CLI_Command {
 			WP_CLI::error( 'WP Rocket is not enabled.' );
 		}
 
+		// check if filter rocket_set_wp_cache_constant disallow writing to wp-config.php
 		if (apply_filters( 'rocket_set_wp_cache_constant', true ))
 		{
-			WP_CLI::error( 'WP_CACHE is not defined outside wp-config.php.' );	
+			WP_CLI::success( 'disable writing to wp-config.php' );
+
+			//writing is still allowed, so we disable it for this wp-cli run 
+			add_filter( 'rocket_set_wp_cache_constant', '__return_false' );
 		}
 		
 		if ( !defined( 'WP_CACHE' ))
@@ -166,7 +173,8 @@ class WPRocket_CLI extends WP_CLI_Command {
 					global $dir_prefix;
 
 					$dir_prefix  = $assoc_args['vhost_dir'];
-					
+	
+					// setup a filter to fix the paths in the advanced-cache.php file
 					add_filter('rocket_advanced_cache_file', array( &$this, 'advanced_cache_filter_cb')); 
 				}
 
