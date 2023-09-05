@@ -455,10 +455,18 @@ class WPRocket_CLI extends WP_CLI_Command {
 
 	/**
 	 * Export Settings.
+	 * 
+	 *  ## OPTIONS
+	 *
+	 * [--output-file=<file_path>]
+	 * : The path where the exported json should be written:
+	 *  - example.json
+	 *  - /tmp/example.json
 	 *
 	 * ## EXAMPLES
 	 *
 	 *     wp rocket export
+	 * 	   wp rocket export --output-file=wp-settings-site-1.json
 	 *
 	 * @subcommand export
 	 */
@@ -467,20 +475,20 @@ class WPRocket_CLI extends WP_CLI_Command {
 		if ( ! is_plugin_active( 'wp-rocket/wp-rocket.php' ) ) {
 			WP_CLI::error( 'WP Rocket is not enabled.' );
 		}
-
-		$filename = sprintf( 'wp-rocket-settings-%s-%s.json', date( 'Y-m-d' ), uniqid() ); // phpcs:ignore WordPress.DateTime.RestrictedFunctions.date_date
-		$gz       = 'gz' . strrev( 'etalfed' );
+		$filename = $assoc_args['output-file'] ? $assoc_args['output-file'] : false;
+		if(!$filename){
+			$filename = sprintf( 'wp-rocket-settings-%s-%s.json', date( 'Y-m-d' ), uniqid() ); // phpcs:ignore WordPress.DateTime.RestrictedFunctions.date_date
+		}
 		$options  = wp_json_encode( get_option( 'wp_rocket_settings' ) );
 
 		$file = fopen( $filename, 'w' );
 		$res  = fwrite( $file, $options );
 		if ( false === $res ) {
-			WP_CLI::error( 'Export: error writing to export file.' );
+			WP_CLI::error( 'Export: error writing to export file '. $filename );
 		} else {
 			WP_CLI::success( 'Successfully exported in ' . $filename );
 		}
 		fclose( $file );
-
 	}
 
 	/**
