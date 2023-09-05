@@ -13,7 +13,8 @@ This repository contains a [WP-CLI command](https://github.com/wp-cli/wp-cli)  f
 * `wp rocket regenerate --file=<file>` -- Regenerate .htaccess, advanced-cache.php or the WP Rocket config file.
 * `wp rocket regenerate --file=config --nginx=true` -- regenerate the config file on Nginx hosts.
 * `wp rocket cdn --enable=<enable> --host=<host> --zone=<zone>` -- Enable / Disable CDN with the specified host and zone.
-* `wp rocket export` -- Exports the WP Rocket settings as a json file to the current directory.
+* `wp rocket export --output-file=<file_path>` -- Exports the WP Rocket settings as a json file to the current directory
+or to the specified file path. 
 * `wp rocket import --file=settings.json` -- Imports the settings contained in the provided json file.
 
 ## Installing
